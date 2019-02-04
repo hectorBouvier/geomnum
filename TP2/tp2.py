@@ -19,7 +19,7 @@
 #    Tibor.Stanko at inria.fr
 #
 #------------------------------------------------------
-
+import datetime
 import sys, os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -134,7 +134,26 @@ def ComputeSplineC2( DataPts ) :
     
     # right side
     R = np.zeros([3*n+1,2])
-    
+    for i in range(n+1):
+        R[i]=DataPts[i] #we put the n+1 control points
+        M[i,3*i]=1  #
+    for i in range(n-1):
+        #c1 equations
+        M[i+(n+1),3*(i+1)-1]=1
+        M[i+(n+1),3*(i+1)]=-2
+        M[i+(n+1),3*(i+1)+1]=1
+        #c2 equations
+        M[i+(n+1)+(n+1)-2,3*(i+1)-2]=1
+        M[i+(n+1)+(n+1)-2,3*(i+1)-1]=-2
+        M[i+(n+1)+(n+1)-2,3*(i+1)+1]=2
+        M[i+(n+1)+(n+1)-2,3*(i+1)+2]=-1
+    #2 natural spline equation
+    M[3*n-1,0]=1
+    M[3*n-1,1]=-2
+    M[3*n-1,2]=1 
+    M[3*n,3*n]=1
+    M[3*n,3*n-1]=-2
+    M[3*n,3*n-2]=1
     ##
     ## TODO : Fill the matrix of the system M.
     ##          C0  :  n+1 rows
@@ -200,6 +219,7 @@ if __name__ == "__main__":
 
         # compute Bezier points
         if c2 :
+            iBezierPts=np.zeros([4,2])
             BezierPts = ComputeSplineC2( DataPts )
             cstr='C2'
             deg=3
@@ -208,11 +228,14 @@ if __name__ == "__main__":
             BezierPts = ComputeSplineC1( DataPts )
             cstr='C1'
             deg=2
-        iBezierPts=np.zeros([3,2])
+        
         # for each segment : compute and plot
         for i in range(0,n) :
             if c2:
-                pass
+                iBezierPts[0] = BezierPts[3*i]
+                iBezierPts[1] = BezierPts[3*i+1]
+                iBezierPts[2] = BezierPts[3*i+2]
+                iBezierPts[3] = BezierPts[3*i+3]    
             else :
                 iBezierPts[0] = BezierPts[2*i]
                 iBezierPts[1] = BezierPts[2*i+1]
@@ -240,13 +263,13 @@ if __name__ == "__main__":
         
         # titles
         plt.gcf().canvas.set_window_title('TP2 Bezier splines')
-        plt.title(cstr+' '+dataname+', '+str(density)+" pts/segment")
+        plt.title(cstr+' '+dataname+datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")+', '+str(density)+" pts/segment")
 
         ##
         ## TODO : Uncomment if you want to save the render as png image in data/
         ##
         
-        #plt.savefig( DATADIR + dataname + ".png" )
+        plt.savefig( DATADIR + dataname + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")+".png" )
         
         # render
         plt.show()        
