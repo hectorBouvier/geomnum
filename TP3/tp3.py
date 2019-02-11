@@ -168,13 +168,17 @@ if __name__ == "__main__":
         ##
         # loop over segments
         for j in range(degree,m-degree) :
-            
+            if nurbs:
+                ControlPts[:,0]=ControlPts[:,0]*ControlPts[:,2]
+                ControlPts[:,1]=ControlPts[:,1]*ControlPts[:,2]
             if Knots[j]!=Knots[j+1]:        
                 Segment = np.zeros([density,dim])
                 T=np.linspace(Knots[j],Knots[j+1],density)
                 for t in range(np.shape(T)[0]):
-                    Segment[t]=DeBoor(ControlPts, Knots,degree, j,T[t]) 
-
+                    Segment[t]=DeBoor(ControlPts[:,:], Knots,degree, j,T[t]) 
+            if nurbs:
+                ControlPts[:,0]=ControlPts[:,0]/ControlPts[:,2]
+                ControlPts[:,1]=ControlPts[:,1]/ControlPts[:,2]    
             # plot the segment
             plt.plot( Segment[:,0], Segment[:,1], '-',linewidth=3)
         
