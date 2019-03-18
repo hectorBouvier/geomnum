@@ -19,17 +19,7 @@
 #    Tibor.Stanko at inria.fr
 #
 #-------------------------------------------------
-
-import sys, os
-import numpy as np
-from viewer import Viewer
-
-TP = os.path.dirname(os.path.realpath(__file__)) + "/"
-
-#-------------------------------------------------
-# READBSPLINEMESHWITHKNOTS()
-# Read B-spline surface data from a .bspline of a .nurbs file.
-#
+		
 # Input
 #     datafile  :  file to be read
 #
@@ -38,6 +28,16 @@ TP = os.path.dirname(os.path.realpath(__file__)) + "/"
 #     U         :  knot sequence in the u-direction
 #     V         :  knot sequence in the v-direction
 #
+
+import sys, os
+import numpy as np
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+from viewer import Viewer
+
+TP = os.path.dirname(os.path.realpath(__file__)) + "/"
+DATADIR = TP+"data/"
+
 def ReadBSplineMeshWithKnots( datafile, nurbs=False ) :
     # if nurbs, read four coordinates; otherwise read three
     if nurbs : 
@@ -68,12 +68,29 @@ def ReadBSplineMeshWithKnots( datafile, nurbs=False ) :
 # 
 def DeBoorSurf( M, U, V, r, s, i, j, u, v ) :
     
-    ##
-    ## TODO :
-    ## Implement recursive De Boor's algorithm for surfaces.
-    ##
+    m, n = M.shape    
+    b=np.zeros(n)
+    for j in range(n):
+        b[j]=DeBoor1D(M[j,:],U ,r ,i ,u)
+
+    return DeBoor1D(b,V,s,j,v)
     
-    pass
+    
+
+def DeBoor1D( ControlPts, Knots, r, j, t ) :
+    if r==0:
+        return ControlPts[j]
+    else:
+        
+        k= Knots.shape[0] - ControlPts.shape[0] - 3
+ 
+        w=Knots[j+k-r+1]-Knots[j]        
+        if w!=0:
+            w=(t-Knots[j])/w
+            return w*DeBoor1D(ControlPts,Knots,r-1,j,t)+(1-w)*DeBoor1D(ControlPts,Knots,r-1,j-1,t)
+        else:
+            return DeBoor1D(ControlPts,Knots,r-1,j-1,t)
+
 
 #-------------------------------------------------
 if __name__ == "__main__":
@@ -145,7 +162,6 @@ if __name__ == "__main__":
         
         du = k-m-1           # degree in u-direction
         dv = l-n-1           # degree in v-direction
-        
         # loop over segments in u-direction
         for i in range(du,k-du) :
             
@@ -170,8 +186,15 @@ if __name__ == "__main__":
                 Sx = np.zeros([samples,samples])
                 Sy = np.zeros([samples,samples])
                 Sz = np.zeros([samples,samples])
-                
-                
+
+                u=np.linspace(U[i],U[i+1],samples)
+                v=np.linspace(V[j],V[j+1],samples)
+                for uu in range(samples):
+                    for vv in range(samples):
+                        Sx[uu,vv]=DeBoorSurf( Mx, U, V, du, dv, i, j, u[uu], v[vv] )
+                        Sy[uu,vv]=DeBoorSurf( My, U, V, du, dv, i, j, u[uu], v[vv] )
+                        Sz[uu,vv]=DeBoorSurf( Mz, U, V, du, dv, i, j, u[uu], v[vv] )
+
                 ##
                 ## TODO :
                 ## Compute patch points using DeBoorSurf.
