@@ -70,9 +70,9 @@ def DeBoorSurf( M, U, V, r, s, i, j, u, v ) :
     
     m, n = M.shape    
     b=np.zeros(n)
-    for j in range(n):
-        b[j]=DeBoor1D(M[j,:],U ,r ,i ,u)
-
+    for k in range(n):
+        b[k]=DeBoor1D(M[k,:],U ,r ,i ,u)
+    print(b)
     return DeBoor1D(b,V,s,j,v)
     
     
@@ -82,7 +82,7 @@ def DeBoor1D( ControlPts, Knots, r, j, t ) :
         return ControlPts[j]
     else:
         
-        k= Knots.shape[0] - ControlPts.shape[0] - 3
+        k= Knots.shape[0] - ControlPts.shape[0] - 1
  
         w=Knots[j+k-r+1]-Knots[j]        
         if w!=0:
@@ -195,32 +195,8 @@ if __name__ == "__main__":
                         Sy[uu,vv]=DeBoorSurf( My, U, V, du, dv, i, j, u[uu], v[vv] )
                         Sz[uu,vv]=DeBoorSurf( Mz, U, V, du, dv, i, j, u[uu], v[vv] )
 
-                ##
-                ## TODO :
-                ## Compute patch points using DeBoorSurf.
-                ## 
-                ## HINT1 :
-                ##   Use a double loop.
-                ##    - loop over u in [ U_i, U_i+1 ]
-                ##    -- loop over v in [ V_j, V_j+1 ]
-                ##
-                ## HINT2
-                ##   Uniform sampling of interval [ a, b ] is computed via
-                ##   np.linspace(a,b,num=samples)
-                ##
-                
-                
-                
-                ##
-                ## BONUS TODO :
-                ## NURBS Divide Sx, Sy, Sz by Sw
-                ## HINT : use the function np.divide(A,B)
-                ##
-                
-                # after the Sx, Sy, Sz have been calculated :
-                # add current patch to the viewer
+
                 viewer.add_patch(Sx,Sy,Sz)
-                
             # END for j in range( degreeV, n-degreeV )
         # END for i in range( degreeU, m-degreeU )
         
