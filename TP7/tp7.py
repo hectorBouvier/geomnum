@@ -72,7 +72,6 @@ def DeBoorSurf( M, U, V, r, s, i, j, u, v ) :
     b=np.zeros(n)
     for k in range(n):
         b[k]=DeBoor1D(M[k,:],U ,r ,i ,u)
-    print(b)
     return DeBoor1D(b,V,s,j,v)
     
     
